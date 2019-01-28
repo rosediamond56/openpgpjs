@@ -11405,16 +11405,9 @@ utils.intFromLE = intFromLE;
 
 },{"bn.js":17,"minimalistic-assert":50,"minimalistic-crypto-utils":51}],34:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      "github:openpgpjs/elliptic",
-      "/Users/sunny/Desktop/Protonmail/openpgpjs"
-    ]
-  ],
   "_from": "github:openpgpjs/elliptic",
-  "_id": "elliptic@github:openpgpjs/elliptic#e187e706e11fa51bcd20e46e5119054be4e2a4a6",
+  "_id": "elliptic@6.4.0",
   "_inBundle": false,
-  "_integrity": "",
   "_location": "/elliptic",
   "_phantomChildren": {},
   "_requested": {
@@ -11430,7 +11423,7 @@ module.exports={
   ],
   "_resolved": "github:openpgpjs/elliptic#e187e706e11fa51bcd20e46e5119054be4e2a4a6",
   "_spec": "github:openpgpjs/elliptic",
-  "_where": "/Users/sunny/Desktop/Protonmail/openpgpjs",
+  "_where": "/mnt/c/Users/danie/Documents/mega/openpgpjs",
   "author": {
     "name": "Fedor Indutny",
     "email": "fedor@indutny.com"
@@ -11438,6 +11431,7 @@ module.exports={
   "bugs": {
     "url": "https://github.com/indutny/elliptic/issues"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "bn.js": "^4.4.0",
     "brorand": "^1.0.1",
@@ -11447,6 +11441,7 @@ module.exports={
     "minimalistic-assert": "^1.0.0",
     "minimalistic-crypto-utils": "^1.0.0"
   },
+  "deprecated": false,
   "description": "EC cryptography",
   "devDependencies": {
     "brfs": "^1.4.3",
@@ -21800,16 +21795,9 @@ module.exports = Stream;
 
 },{}],73:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      "github:openpgpjs/seek-bzip",
-      "/Users/sunny/Desktop/Protonmail/openpgpjs"
-    ]
-  ],
   "_from": "github:openpgpjs/seek-bzip",
-  "_id": "seek-bzip@github:openpgpjs/seek-bzip#3aca608ffedc055a1da1d898ecb244804ef32209",
+  "_id": "seek-bzip@1.0.5-git",
   "_inBundle": false,
-  "_integrity": "",
   "_location": "/seek-bzip",
   "_phantomChildren": {
     "graceful-readlink": "1.0.1"
@@ -21827,7 +21815,7 @@ module.exports={
   ],
   "_resolved": "github:openpgpjs/seek-bzip#3aca608ffedc055a1da1d898ecb244804ef32209",
   "_spec": "github:openpgpjs/seek-bzip",
-  "_where": "/Users/sunny/Desktop/Protonmail/openpgpjs",
+  "_where": "/mnt/c/Users/danie/Documents/mega/openpgpjs",
   "bin": {
     "seek-bunzip": "./bin/seek-bunzip",
     "seek-table": "./bin/seek-bzip-table"
@@ -21835,6 +21823,7 @@ module.exports={
   "bugs": {
     "url": "https://github.com/cscott/seek-bzip/issues"
   },
+  "bundleDependencies": false,
   "contributors": [
     {
       "name": "C. Scott Ananian",
@@ -21854,6 +21843,7 @@ module.exports={
   "dependencies": {
     "commander": "~2.8.1"
   },
+  "deprecated": false,
   "description": "a pure-JavaScript Node.JS module for random-access decoding bzip2 data",
   "devDependencies": {
     "fibers": "~1.0.6",
@@ -23761,7 +23751,7 @@ exports.default = {
    * @memberof module:config
    * @property {String} versionstring A version string to be included in armored messages
    */
-  versionstring: "OpenPGP.js v4.4.6",
+  versionstring: "OpenPGP.js v4.4.7",
   /**
    * @memberof module:config
    * @property {String} commentstring A comment string to be included in armored messages
@@ -29640,7 +29630,7 @@ function dearmor(input) {
               throw new Error('Misformed armored text');
             }
             // remove trailing whitespace at end of lines
-            line = line.replace(/[\t\r\n ]+$/, '');
+            line = _util2.default.removeTrailingSpaces(line.replace(/[\r\n]/g, ''));
             if (!type) {
               if (reSplit.test(line)) {
                 type = getType(line);
@@ -29696,7 +29686,7 @@ function dearmor(input) {
               let remainder = await reader.readToEnd();
               if (!remainder.length) remainder = '';
               remainder = line + remainder;
-              remainder = remainder.replace(/[\t\r ]+$/mg, '');
+              remainder = _util2.default.removeTrailingSpaces(remainder.replace(/\r/g, ''));
               const parts = remainder.split(reSplit);
               if (parts.length === 1) {
                 throw new Error('Misformed armored text');
@@ -32514,7 +32504,7 @@ function isDataExpired(keyPacket, signature, date = new Date()) {
   const normDate = _util2.default.normalizeDate(date);
   if (normDate !== null) {
     const expirationTime = getExpirationTime(keyPacket, signature);
-    return !(keyPacket.created <= normDate && normDate <= expirationTime) || signature && signature.isExpired(date);
+    return !(normDate <= expirationTime) || signature && signature.isExpired(date);
   }
   return false;
 }
@@ -34617,7 +34607,13 @@ function linkStreams(result, message, erroringStream) {
 async function prepareSignatures(signatures) {
   await Promise.all(signatures.map(async signature => {
     signature.signature = await signature.signature;
-    signature.valid = await signature.verified;
+    try {
+      signature.valid = await signature.verified;
+    } catch (e) {
+      signature.valid = null;
+      signature.error = e;
+      _util2.default.print_debug_error(e);
+    }
   }));
 }
 
@@ -38024,7 +38020,7 @@ Signature.prototype.isExpired = function (date = new Date()) {
   const normDate = _util2.default.normalizeDate(date);
   if (normDate !== null) {
     const expirationTime = this.getExpirationTime();
-    return !(this.created <= normDate && normDate <= expirationTime);
+    return !(normDate <= expirationTime);
   }
   return false;
 };
@@ -40747,7 +40743,11 @@ exports.default = {
    * Remove trailing spaces and tabs from each line
    */
   removeTrailingSpaces: function removeTrailingSpaces(text) {
-    return text.replace(/[ \t]+$/mg, "");
+    return text.split('\n').map(line => {
+      let i = line.length - 1;
+      for (; i >= 0 && (line[i] === ' ' || line[i] === '\t'); i--);
+      return line.substr(0, i + 1);
+    }).join('\n');
   },
 
   /**
